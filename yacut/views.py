@@ -5,13 +5,12 @@ from __future__ import annotations
 import asyncio
 
 from flask import flash, redirect, render_template
+from sqlalchemy.exc import SQLAlchemyError
 
 from yacut import app
-from yacut.constants import (
-    BASE_URL, DUPLICATED_SHORT_ID_MESSAGE, RESERVED_SHORT_IDS)
+from yacut.constants import DUPLICATED_SHORT_ID_MESSAGE, RESERVED_SHORT_IDS
 from yacut.forms import FileUploadForm, URLMapForm
 from yacut.models import URLMap
-from yacut.services import create_url_map
 from yacut.yandex_disk import upload_files_to_yandex_disk
 
 
@@ -26,18 +25,25 @@ def index_view():
 
         if (
             custom_id in RESERVED_SHORT_IDS
-            or URLMap.query.filter_by(short=custom_id).first() is not None
+            or URLMap.get(custom_id) is not None
         ):
             flash(DUPLICATED_SHORT_ID_MESSAGE)
             return render_template(
                 'index.html', form=form, short_link=short_link
             )
 
-        url_map = create_url_map(
-            original=form.original_link.data,
-            short=custom_id,
-        )
-        short_link = f'{BASE_URL}/{url_map.short}'
+        try:
+            url_map = URLMap.create(
+                original=form.original_link.data,
+                short=custom_id,
+            )
+        except SQLAlchemyError:
+            flash('Ошибка при создании короткой ссылки.')
+            return render_template(
+                'index.html', form=form, short_link=short_link
+            )
+
+        short_link = url_map.get_short_url()
 
     return render_template('index.html', form=form, short_link=short_link)
 
@@ -53,10 +59,18 @@ def files_view():
         disk_files = asyncio.run(upload_files_to_yandex_disk(files))
 
         for disk_file in disk_files:
-            url_map = create_url_map(original=disk_file.download_url)
+            try:
+                url_map = URLMap.create(original=disk_file.download_url)
+            except SQLAlchemyError:
+                flash(
+                    f'Не удалось создать короткую ссылку '
+                    f'для файла {disk_file.name}.'
+                )
+                continue
+
             uploaded_files.append({
                 'name': disk_file.name,
-                'short_link': f'{BASE_URL}/{url_map.short}',
+                'short_link': url_map.get_short_url(),
             })
 
     return render_template(
@@ -69,5 +83,9 @@ def files_view():
 @app.route('/<string:short_id>')
 def redirect_view(short_id: str):
     """Перенаправляет пользователя по короткой ссылке."""
-    url_map = URLMap.query.filter_by(short=short_id).first_or_404()
+    url_map = URLMap.get(short_id)
+
+    if url_map is None:
+        return render_template('404.html'), 404
+
     return redirect(url_map.original)

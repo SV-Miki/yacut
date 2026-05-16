@@ -7,7 +7,7 @@ from flask_wtf.file import FileRequired
 from wtforms import MultipleFileField, StringField, SubmitField
 from wtforms.validators import DataRequired, Length, Optional, Regexp, URL
 
-from yacut.constants import SHORT_ID_MAX_LENGTH
+from yacut.constants import SHORT_ID_MAX_LENGTH, SHORT_ID_PATTERN
 
 
 class URLMapForm(FlaskForm):
@@ -25,7 +25,7 @@ class URLMapForm(FlaskForm):
         validators=[
             Optional(),
             Length(max=SHORT_ID_MAX_LENGTH),
-            Regexp(r'^[A-Za-z0-9]*$'),
+            Regexp(SHORT_ID_PATTERN),
         ],
     )
     submit = SubmitField('Создать')
