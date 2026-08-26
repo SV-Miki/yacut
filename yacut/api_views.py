@@ -33,9 +33,9 @@ def make_error_response(message: str, status_code: HTTPStatus):
 @app.route('/api/id/', methods=['POST'])
 def create_short_link():
     """Создаёт короткую ссылку через API."""
-    data: dict[str, Any] | None = request.get_json(silent=True)
+    data: Any = request.get_json(silent=True)
 
-    if data is None:
+    if not isinstance(data, dict):
         return make_error_response(
             'Отсутствует тело запроса',
             HTTPStatus.BAD_REQUEST,
@@ -51,7 +51,8 @@ def create_short_link():
 
     if custom_id is not None:
         if (
-            len(custom_id) > SHORT_ID_MAX_LENGTH
+            not isinstance(custom_id, str)
+            or len(custom_id) > SHORT_ID_MAX_LENGTH
             or not is_valid_short_id(custom_id)
             or custom_id in RESERVED_SHORT_IDS
         ):
@@ -82,11 +83,9 @@ def create_short_link():
     return response
 
 
-@app.route('/api/id/<path:short_id>/', methods=['GET'])
+@app.route('/api/id/<string:short_id>/', methods=['GET'])
 def get_original_link(short_id: str):
     """Возвращает оригинальную ссылку по короткому идентификатору."""
-    short_id = short_id.rstrip('/').split('/')[-1]
-
     url_map = URLMap.get(short_id)
 
     if url_map is None:

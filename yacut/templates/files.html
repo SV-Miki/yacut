@@ -14,11 +14,20 @@
     <div class="row my-3">
       <div class="col-sm"></div>
       <div class="col-sm">
+        {% with messages = get_flashed_messages() %}
+          {% for message in messages %}
+            <p class="text-danger">{{ message }}</p>
+          {% endfor %}
+        {% endwith %}
+
         <form method="post" enctype="multipart/form-data">
           {{ form.csrf_token }}
 
           <div>
             {{ form.files(class="form-control form-control-lg py-2 mb-3") }}
+            {% for error in form.files.errors %}
+              <div class="text-danger mb-2">{{ error }}</div>
+            {% endfor %}
           </div>
 
           {{ form.submit(class="btn btn-primary") }}
@@ -34,6 +43,12 @@
         <div class="col-sm"></div>
         <div class="col-sm-6">
           <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Файл</th>
+                <th scope="col">Короткая ссылка</th>
+              </tr>
+            </thead>
             <tbody>
               {% for file in uploaded_files %}
                 <tr>

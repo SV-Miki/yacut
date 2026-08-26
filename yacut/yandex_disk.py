@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 
 import aiohttp
@@ -101,9 +102,8 @@ async def upload_one_file(
 async def upload_files_to_yandex_disk(
     files: list[FileStorage],
 ) -> list[UploadedFile]:
-    """Загружает список файлов на Яндекс Диск."""
+    """Асинхронно загружает список файлов на Яндекс Диск."""
     async with aiohttp.ClientSession() as session:
-        result = []
-        for file in files:
-            result.append(await upload_one_file(session, file))
-        return result
+        return await asyncio.gather(
+            *(upload_one_file(session, file) for file in files)
+        )

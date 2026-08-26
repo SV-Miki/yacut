@@ -16,9 +16,7 @@
       <div class="col-sm">
         {% with messages = get_flashed_messages() %}
           {% for message in messages %}
-            <p>
-              <span style="color:red">{{ message }}</span>
-            </p>
+            <p class="text-danger">{{ message }}</p>
           {% endfor %}
         {% endwith %}
 
@@ -30,6 +28,9 @@
               class="form-control form-control-lg py-2 mb-3",
               placeholder="Длинная ссылка"
             ) }}
+            {% for error in form.original_link.errors %}
+              <div class="text-danger mb-2">{{ error }}</div>
+            {% endfor %}
           </div>
 
           <div>
@@ -37,6 +38,9 @@
               class="form-control form-control-lg py-2 mb-3",
               placeholder="Ваш вариант короткой ссылки"
             ) }}
+            {% for error in form.custom_id.errors %}
+              <div class="text-danger mb-2">{{ error }}</div>
+            {% endfor %}
           </div>
 
           {{ form.submit(class="btn btn-primary") }}

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import asyncio
 
-from flask import flash, redirect, render_template
+import aiohttp
+from flask import abort, flash, redirect, render_template
 from sqlalchemy.exc import SQLAlchemyError
 
 from yacut import app
@@ -56,7 +57,16 @@ def files_view():
 
     if form.validate_on_submit():
         files = [file for file in form.files.data if file.filename]
-        disk_files = asyncio.run(upload_files_to_yandex_disk(files))
+
+        try:
+            disk_files = asyncio.run(upload_files_to_yandex_disk(files))
+        except aiohttp.ClientError:
+            flash('Не удалось загрузить файлы на Яндекс Диск.')
+            return render_template(
+                'files.html',
+                form=form,
+                uploaded_files=uploaded_files,
+            )
 
         for disk_file in disk_files:
             try:
@@ -86,6 +96,6 @@ def redirect_view(short_id: str):
     url_map = URLMap.get(short_id)
 
     if url_map is None:
-        return render_template('404.html'), 404
+        abort(404)
 
     return redirect(url_map.original)

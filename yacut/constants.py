@@ -17,8 +17,6 @@ DUPLICATED_SHORT_ID_MESSAGE = (
 )
 INVALID_SHORT_ID_MESSAGE = 'Указано недопустимое имя для короткой ссылки'
 
-BASE_URL = 'http://localhost'
-
 YANDEX_DISK_API_URL = 'https://cloud-api.yandex.net/v1/disk'
 YANDEX_DISK_UPLOAD_URL = f'{YANDEX_DISK_API_URL}/resources/upload'
 YANDEX_DISK_DOWNLOAD_URL = f'{YANDEX_DISK_API_URL}/resources/download'

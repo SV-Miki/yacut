@@ -6,6 +6,7 @@ from datetime import datetime
 from random import choice
 
 from flask import url_for
+from sqlalchemy.exc import SQLAlchemyError
 
 from yacut import db
 from yacut.constants import (
@@ -60,8 +61,12 @@ class URLMap(db.Model):
             short=short or cls.get_unique_short_id(),
         )
 
-        db.session.add(url_map)
-        db.session.commit()
+        try:
+            db.session.add(url_map)
+            db.session.commit()
+        except SQLAlchemyError:
+            db.session.rollback()
+            raise
 
         return url_map
 
