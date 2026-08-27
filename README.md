@@ -46,7 +46,7 @@ YaCut — веб-сервис для создания коротких ссыл�
 ## Структура проекта
 
 ```text
-async-yacut/
+yacut/
 ├── migrations/                         # Миграции базы данных
 ├── postman_collection/                 # Postman-коллекция и вспомогательные материалы
 ├── tests/                              # Проверки проекта
@@ -73,8 +73,8 @@ async-yacut/
 Клонируйте репозиторий:
 
 ```bash
-git clone https://github.com/SV-Miki/async-yacut.git
-cd async-yacut
+git clone https://github.com/SV-Miki/yacut.git
+cd yacut
 ```
 
 Создайте виртуальное окружение:
